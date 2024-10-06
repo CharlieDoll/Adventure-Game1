@@ -1,0 +1,126 @@
+from room import Room
+from character import Enemy, Character, Friend
+
+# Setting up rooms
+kitchen = Room("Kitchen")
+ballroom = Room("Ballroom")
+dining_hall = Room("Dining Hall")
+
+kitchen.set_description("A dank and dirty room buzzing with flies")
+ballroom.set_description("A vast room with a shiny wooden floor")
+dining_hall.set_description("A large room with ornate decorations")
+
+# Linking rooms
+kitchen.link_room(dining_hall, "south")
+dining_hall.link_room(kitchen, "north")
+dining_hall.link_room(ballroom, "west")
+ballroom.link_room(dining_hall, "east")
+
+# Setting up characters
+balor = Enemy("Balor the Mighty", "A smelly Ogre")
+balor.set_conversation("I will eat you puny Adventurer!")
+balor.set_weakness("mirror")
+dining_hall.add_character(balor)
+
+shadow_lord = Enemy("Shadow Lord", "A disciple from Hell!")
+shadow_lord.set_conversation("I will take your soul!")
+shadow_lord.set_weakness("fire")
+ballroom.add_character(shadow_lord)
+
+elf = Friend("Arrina", "A forest Elf")
+elf.set_conversation("Hello Adventurer, may your quest be blessed by the Goddess")
+dining_hall.add_character(elf)
+
+# Player character
+player = Character("Our Adventurer", "A brave soul looking for treasure.")
+player_inventory = []  # List to store player's inventory
+
+# Starting room
+current_room = kitchen
+
+# Main game loop
+while True:
+    print("\n")
+    current_room.get_details()
+
+    characters_in_room = current_room.get_characters()
+
+    # Only ask for a character once, if there are any
+    if characters_in_room:
+        print("Choose a character to interact with:")
+        for i, character in enumerate(characters_in_room, start=1):
+            print(f"{i}. {character.name}")
+        char_choice = input("Enter the number of the character: ")
+
+        if char_choice.isdigit() and 1 <= int(char_choice) <= len(characters_in_room):
+            chosen_character = characters_in_room[int(char_choice) - 1]
+            print(f"You have chosen to interact with {chosen_character.name}.")
+        else:
+            print("Invalid choice. Try again.")
+            continue
+    else:
+        chosen_character = None
+
+    # Enter interaction loop for commands after character selection
+    while True:
+        # Getting player command
+        command = input("> ").lower()
+
+        # Movement
+        if command in ["north", "south", "east", "west"]:
+            current_room = current_room.move(command)
+            break  # Exit the inner loop to allow room change
+
+        # Talk
+        elif command == "talk" and chosen_character:
+            print(f"You are talking to {chosen_character.name}")
+            chosen_character.talk()
+
+        # Fight
+        elif command == "fight" and isinstance(chosen_character, Enemy):
+            fight_item = input("What will you fight with? ").lower()
+            if fight_item in player_inventory:
+                result = chosen_character.fight(fight_item)
+                if not result:
+                    print("You lost the fight. Game over!")
+                    break
+                else:
+                    print(f"You defeated {chosen_character.name}!")
+                    current_room.remove_character(chosen_character)
+                    break  # Exit the loop since the character is defeated
+            else:
+                print("You don't have that item in your inventory!")
+
+        # Steal
+        elif command == "steal" and isinstance(chosen_character, Enemy):
+            chosen_character.steal()
+
+        # Bribe
+        elif command == "bribe" and isinstance(chosen_character, Enemy):
+            item_to_bribe = input("What will you bribe with? ")
+            success = chosen_character.bribe(item_to_bribe)
+            if success:
+                current_room.remove_character(chosen_character)
+                break  # Exit the loop since the character is no longer in the room
+            else:
+                print("The bribe failed. Prepare to defend yourself!")
+
+        # Look around
+        elif command == "look":
+            print("You look around the room for any useful items or clues.")
+
+        # Inventory
+        elif command == "inventory":
+            if player_inventory:
+                print(f"You are carrying: {', '.join(player_inventory)}")
+            else:
+                print("You are not carrying anything.")
+
+        # Quit the game
+        elif command == "quit":
+            print("Exiting the game. Goodbye!")
+            exit()  # Exit the game loop entirely
+
+        # Invalid command
+        else:
+            print("Invalid command. Try 'north', 'south', 'east', 'west', 'talk', 'fight', 'steal', 'bribe', 'look', 'inventory', or 'quit'.")
