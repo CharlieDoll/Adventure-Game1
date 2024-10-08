@@ -1,46 +1,46 @@
-class Room():
-    def __init__(self, room_name):
-        self.name = room_name
+class Room:
+    def __init__(self, name):
+        self.name = name
         self.description = None
         self.linked_rooms = {}
-        self.character = None
+        self.characters = []  # List to store multiple characters
+        self.items = []  # List to store items in the room
 
-    def get_description(self):
-        return self.description
-    
-    def set_description(self, room_description):
-        self.description = room_description
+    def set_description(self, description):
+        self.description = description
 
-    def descibe(self):
-        print(self.description)
+    def add_character(self, character):
+        self.characters.append(character)  # Add character to the room
 
-    def set_name(self, room_name):
-        self.name = room_name
+    def remove_character(self, character):
+        self.characters.remove(character)  # Remove character from the room
 
-    def get_name(self):
-        return self.name
-    
-    def set_character(self, new_character):
-       self.character = new_character
+    def add_item(self, item):
+        self.items.append(item)  # Add item to the room
 
-    def get_character(self):
-       return self.character
-    
-    def link_room(self, room_to_link, direction):
-        self.linked_rooms[direction] = room_to_link
+    def remove_item(self, item):
+        self.items.remove(item)  # Remove item from the room
+
+    def get_items(self):
+        return self.items  # Return the list of items
+
+    def describe_items(self):
+        if self.items:
+            print("You see the following items:")
+            for item in self.items:
+                print(f"- {item.name}")
+        else:
+            print("There are no items here.")
 
     def get_details(self):
-        print(self.name)
-        print("------------------------")
+        print(f"{self.name}")
+        print("--------------------")
         print(self.description)
+        if self.characters:
+            print("Inhabitants in the room:")
+            for character in self.characters:
+                print(f"{character.name} - {character.description}")
+        self.describe_items()  # List items in the room
         for direction in self.linked_rooms:
             room = self.linked_rooms[direction]
-            print("The" + room.get_name ()+ "is" + direction)
-
-    def move(self, direction):
-        if direction in self.linked_rooms:
-         return self.linked_rooms[direction]
-            
-        else:
-            print("You can't go that way")
-            return self
+            print(f"The {room.name} is {direction}")
